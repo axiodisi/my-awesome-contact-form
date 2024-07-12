@@ -20,7 +20,7 @@
         email: document.getElementById('email').value,
         message: document.getElementById('message').value
     };
-    fetch('YOUR_GOOGLE_APPS_SCRIPT_URL', {
+    fetch('https://script.google.com/macros/s/AKfycbxP-u2I4DKoJP10tdmH8cxg1ENXNV9do8dwIIxMuQjP7_CgQn516Wk0bhWpSICLoFrQ/exec', {
         method: 'POST',
         body: JSON.stringify(formData)
     })
