@@ -14,25 +14,50 @@
     </form>
     <div id="result"></div>
     <script>
-    document.getElementById('contact-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var formData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        message: document.getElementById('message').value
-    };
-    fetch('https://script.google.com/macros/s/AKfycbxP-u2I4DKoJP10tdmH8cxg1ENXNV9do8dwIIxMuQjP7_CgQn516Wk0bhWpSICLoFrQ/exec', {
-        method: 'POST',
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('result').textContent = 'Thanks for your message!';
-    })
-    .catch(error => {
-        document.getElementById('result').textContent = 'Oops! Something went wrong.';
-    });
-});
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwnfdf4iqzkrB3aUw_td6_BRpgfHFY2LmC5BOoHWqcCgH6jht7tzp_8aBBVPwACfiT5/exec';
+        const form = document.getElementById('contact-form');
+        const result = document.getElementById('result');
+
+        // Function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Function to set cookie
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            const expires = `expires=${date.toUTCString()}`;
+            document.cookie = `${name}=${value};${expires};path=/`;
+        }
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            result.textContent = 'Sending...';
+
+            // Get the spreadsheetId from cookie or set it to 'create'
+            let spreadsheetId = getCookie('spreadsheetId') || 'create';
+
+            const formData = new FormData(form);
+            formData.append('spreadsheetId', spreadsheetId);
+
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    result.textContent = data.result;
+                    form.reset();
+                    // If a new spreadsheet was created, save its ID
+                    if (data.spreadsheetId) {
+                        setCookie('spreadsheetId', data.spreadsheetId, 365);  // Save for 1 year
+                    }
+                })
+                .catch(error => {
+                    console.error('Error!', error.message);
+                    result.textContent = 'Oops! Something went wrong.';
+                });
+        });
     </script>
 </body>
 </html>
