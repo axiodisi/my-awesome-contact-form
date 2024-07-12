@@ -14,7 +14,7 @@
     </form>
     <div id="result"></div>
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwnfdf4iqzkrB3aUw_td6_BRpgfHFY2LmC5BOoHWqcCgH6jht7tzp_8aBBVPwACfiT5/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzS-0Zq6xm7y2J0Q9ZXWUX4wWYlAmEQ1mlqi_fNsq3W6zqpPx4ZsyXpgJ0UwEIK1cvv/exec';
         const form = document.getElementById('contact-form');
         const result = document.getElementById('result');
 
@@ -33,6 +33,17 @@
             document.cookie = `${name}=${value};${expires};path=/`;
         }
 
+        // Function to load script dynamically
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
         form.addEventListener('submit', e => {
             e.preventDefault();
             result.textContent = 'Sending...';
@@ -41,22 +52,32 @@
             let spreadsheetId = getCookie('spreadsheetId') || 'create';
 
             const formData = new FormData(form);
-            formData.append('spreadsheetId', spreadsheetId);
+            const queryString = new URLSearchParams(formData).toString();
 
-            fetch(scriptURL, { method: 'POST', body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    result.textContent = data.result;
-                    form.reset();
-                    // If a new spreadsheet was created, save its ID
-                    if (data.spreadsheetId) {
-                        setCookie('spreadsheetId', data.spreadsheetId, 365);  // Save for 1 year
-                    }
-                })
-                .catch(error => {
-                    console.error('Error!', error.message);
-                    result.textContent = 'Oops! Something went wrong.';
-                });
+            // Create a unique callback name
+            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+
+            // Create the JSONP URL
+            const jsonpUrl = `${scriptURL}?${queryString}&spreadsheetId=${spreadsheetId}&callback=${callbackName}`;
+
+            // Define the callback function
+            window[callbackName] = function(data) {
+                result.textContent = data.result;
+                form.reset();
+                // If a new spreadsheet was created, save its ID
+                if (data.spreadsheetId) {
+                    setCookie('spreadsheetId', data.spreadsheetId, 365);  // Save for 1 year
+                }
+                // Clean up: remove the script tag and delete the global callback function
+                document.head.removeChild(document.head.lastChild);
+                delete window[callbackName];
+            };
+
+            // Load the script
+            loadScript(jsonpUrl).catch(error => {
+                console.error('Error!', error);
+                result.textContent = 'Oops! Something went wrong.';
+            });
         });
     </script>
 </body>
