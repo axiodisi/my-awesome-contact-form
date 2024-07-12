@@ -4,82 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
+    <style>
+        /* You can add some styles to make the iframe look better */
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 <body>
-    <form id="contact-form">
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="email" id="email" placeholder="Your Email" required>
-        <textarea id="message" placeholder="Your Message" required></textarea>
-        <button type="submit">Send</button>
-    </form>
-    <div id="result"></div>
-    <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzS-0Zq6xm7y2J0Q9ZXWUX4wWYlAmEQ1mlqi_fNsq3W6zqpPx4ZsyXpgJ0UwEIK1cvv/exec';
-        const form = document.getElementById('contact-form');
-        const result = document.getElementById('result');
+    <h1>Contact Us</h1>
+    <p>Please use the form below to get in touch with us:</p>
+    
+    <iframe src="https://script.google.com/macros/s/AKfycbww7iC0E-gCE02Z8HZvylRA75bIkUbJwaDRIlkkW_NLJAkpp9ZPqsvU8Gox1bhgSIbI/exec" width="100%" height="500px" frameborder="0"></iframe>
 
-        // Function to get cookie value
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
-        // Function to set cookie
-        function setCookie(name, value, days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days*24*60*60*1000));
-            const expires = `expires=${date.toUTCString()}`;
-            document.cookie = `${name}=${value};${expires};path=/`;
-        }
-
-        // Function to load script dynamically
-        function loadScript(url) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            result.textContent = 'Sending...';
-
-            // Get the spreadsheetId from cookie or set it to 'create'
-            let spreadsheetId = getCookie('spreadsheetId') || 'create';
-
-            const formData = new FormData(form);
-            const queryString = new URLSearchParams(formData).toString();
-
-            // Create a unique callback name
-            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-
-            // Create the JSONP URL
-            const jsonpUrl = `${scriptURL}?${queryString}&spreadsheetId=${spreadsheetId}&callback=${callbackName}`;
-
-            // Define the callback function
-            window[callbackName] = function(data) {
-                result.textContent = data.result;
-                form.reset();
-                // If a new spreadsheet was created, save its ID
-                if (data.spreadsheetId) {
-                    setCookie('spreadsheetId', data.spreadsheetId, 365);  // Save for 1 year
-                }
-                // Clean up: remove the script tag and delete the global callback function
-                document.head.removeChild(document.head.lastChild);
-                delete window[callbackName];
-            };
-
-            // Load the script
-            loadScript(jsonpUrl).catch(error => {
-                console.error('Error!', error);
-                result.textContent = 'Oops! Something went wrong.';
-            });
-        });
-    </script>
+    <!-- You can add more content before or after the iframe if needed -->
 </body>
 </html>
-//<iframe src="https://script.google.com/macros/s/AKfycbww7iC0E-gCE02Z8HZvylRA75bIkUbJwaDRIlkkW_NLJAkpp9ZPqsvU8Gox1bhgSIbI/exec" width="100%" height="500px" frameborder="0"></iframe>
